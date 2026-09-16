@@ -29,4 +29,13 @@ const loginUserService = async (email, password) => {
   return user;
 };
 
-module.exports = { registerUserService, loginUserService };
+const getProfileService = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  return user;
+};
+
+module.exports = { registerUserService, loginUserService, getProfileService };

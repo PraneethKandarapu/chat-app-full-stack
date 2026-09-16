@@ -6,6 +6,7 @@ const { registerSchema, loginSchema } = require("../schemas/authSchema.js");
 const {
   registerUserService,
   loginUserService,
+  getProfileService,
 } = require("../services/authServices.js");
 
 const registerUser = async (req, res) => {
@@ -81,11 +82,7 @@ const loginUser = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: req.userId,
-    },
-  });
+  const user = await getProfileService(req.userId);
   const { password, ...safeUser } = user;
   res.json(safeUser);
 };
