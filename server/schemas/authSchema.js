@@ -1,3 +1,4 @@
+// zod validation for registration
 const { z } = require("zod");
 const registerSchema = z.object({
   username: z.string().min(3, "username must be atleast 3 characters"),
