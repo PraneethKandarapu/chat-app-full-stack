@@ -90,4 +90,14 @@ const loginUser = async (req, res) => {
   });
 };
 
-module.exports = { registerUser, loginUser };
+const getProfile = async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: req.userId,
+    },
+  });
+  const { password, ...safeUser } = user;
+  res.json(safeUser);
+};
+
+module.exports = { registerUser, loginUser, getProfile };
