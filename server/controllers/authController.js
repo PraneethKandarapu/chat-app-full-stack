@@ -3,6 +3,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 //zod validation for registration
 const { registerSchema, loginSchema } = require("../schemas/authSchema.js");
+const {
+  registerUserService,
+  loginUserService,
+} = require("../services/authServices.js");
 
 const registerUser = async (req, res) => {
   //   if (!req.body.username || !req.body.email || !req.body.password) {
@@ -20,15 +24,12 @@ const registerUser = async (req, res) => {
   //   console.log(result);
 
   try {
-    const hashedPass = await bcrypt.hash(result.data.password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        username: result.data.username,
-        email: result.data.email,
-        password: hashedPass,
-      },
-    });
+    // call the service
+    const user = await registerUserService(
+      result.data.username,
+      result.data.email,
+      result.data.password,
+    );
 
     const { password, ...safeUser } = user;
 
@@ -63,21 +64,10 @@ const loginUser = async (req, res) => {
     });
   }
   const { email, password } = result.data;
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
+  const user = await loginUserService(email, password);
   if (!user) {
     return res.status(401).json({
       message: "invalid username or password",
-    });
-  }
-
-  const isPasswordCorrect = await bcrypt.compare(password, user.password);
-  if (!isPasswordCorrect) {
-    return res.status(401).json({
-      message: "Invalid email or password",
     });
   }
 
