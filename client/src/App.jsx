@@ -1,12 +1,15 @@
 import { useState } from "react";
+import "../src/App.css";
 
 function App() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const registerUser = () => {
+    setIsLoading(true); //loading started
     fetch("http://localhost:5000/api/auth/register", {
       method: "POST",
       headers: {
@@ -23,6 +26,7 @@ function App() {
       })
       .then((data) => {
         setMessage(data.message || "Registration successful");
+        setIsLoading(false); //loading ended
       });
   };
 
@@ -47,7 +51,9 @@ function App() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={registerUser}>Register</button>
+      <button onClick={registerUser} disabled={isLoading}>
+        {isLoading ? "Registering..." : "Register"}
+      </button>
       <p>{message}</p>
     </div>
   );
