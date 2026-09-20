@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../src/App.css";
+// import "../src/App.css";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -22,11 +22,20 @@ function App() {
       }),
     })
       .then((response) => {
-        return response.json();
+        return response.json().then((data) => {
+          if (!response.ok) {
+            throw new Error(data.message);
+          }
+          return data;
+        });
       })
       .then((data) => {
         setMessage(data.message || "Registration successful");
         setIsLoading(false); //loading ended
+      })
+      .catch((error) => {
+        setMessage(error.message);
+        setIsLoading(false);
       });
   };
 
