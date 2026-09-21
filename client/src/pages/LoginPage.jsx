@@ -31,7 +31,7 @@ function LoginPage() {
       .then((data) => {
         setMessage("Login successful");
         setIsLoading(false);
-        console.log(data);
+        localStorage.setItem("token", data.token);
       })
       .catch((error) => {
         setMessage(error.message);
