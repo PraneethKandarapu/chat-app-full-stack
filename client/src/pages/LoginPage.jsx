@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const loginUser = () => {
     setIsLoading(true);
@@ -32,6 +35,7 @@ function LoginPage() {
         setMessage("Login successful");
         setIsLoading(false);
         localStorage.setItem("token", data.token);
+        navigate("/profile");
       })
       .catch((error) => {
         setMessage(error.message);
@@ -62,6 +66,10 @@ function LoginPage() {
       </button>
 
       <p>{message}</p>
+
+      <p>
+        Don't have an account? <Link to="/register">Register</Link>
+      </p>
     </div>
   );
 }
