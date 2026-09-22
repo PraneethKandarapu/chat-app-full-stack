@@ -12,4 +12,16 @@ model User{
     email String @unique
     password String
     createdAt DateTime @default(now())
+    conversationAsUser1 Conversation[] @relation("User1Conversations")
+    conversationAsUser2 Conversation[] @relation("User2Conversations")
+}
+
+model Conversation {
+  id Int @id @default(autoincrement())
+  user1Id Int
+  user2Id Int
+  createdAt DateTime @default(now())
+
+  user1 User @relation("User1Conversations", fields: [user1Id], references: [id])
+  user2 User @relation("User2Conversations", fields: [user2Id], references: [id])
 }
