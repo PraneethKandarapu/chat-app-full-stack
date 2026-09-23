@@ -2,11 +2,10 @@ const express = require("express");
 
 const router = express.Router();
 
-router.post("/messages", (req, res) => {
-  console.log(req.body);
-  res.json({
-    message: req.body.content,
-  });
-});
+const { createMessage } = require("../controllers/messageController.js");
+
+const authMiddleware = require("../middleware/authMiddleware.js");
+
+router.post("/messages", authMiddleware, createMessage);
 
 module.exports = router;
