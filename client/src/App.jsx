@@ -3,6 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import UsersPage from "./pages/UsersPage";
+import ChatPage from "./pages/ChatPage";
 // import "../src/App.css";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -26,6 +27,14 @@ function App() {
           element={
             <ProtectedRoute>
               <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:conversationId"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
             </ProtectedRoute>
           }
         />
