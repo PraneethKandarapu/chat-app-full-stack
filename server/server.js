@@ -4,6 +4,7 @@ const app = express();
 const messageRoutes = require("./routes/messageRoutes");
 const healthRouter = require("./routes/healthRouter");
 const userRoutes = require("./routes/userRoutes");
+const conversationRoutes = require("./routes/conversationRoutes");
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use("/api", healthRouter);
 // });
 
 app.use("/api", userRoutes);
+app.use("/api", conversationRoutes);
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
