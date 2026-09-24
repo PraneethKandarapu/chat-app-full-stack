@@ -1,6 +1,23 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("hello", (message) => {
+    console.log("Message from client:", message);
+  });
+});
 const messageRoutes = require("./routes/messageRoutes");
 const healthRouter = require("./routes/healthRouter");
 const userRoutes = require("./routes/userRoutes");
@@ -27,6 +44,6 @@ app.use("/api", healthRouter);
 app.use("/api", userRoutes);
 app.use("/api", conversationRoutes);
 
-app.listen(5000, () => {
+server.listen(5000, () => {
   console.log("Server running on port 5000");
 });

@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 
 function ChatPage() {
   const { conversationId } = useParams();
-
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
+  useEffect(() => {
+    const socket = io("http://localhost:5000");
+
+    console.log("Socket connected:", socket.id);
+
+    socket.emit("hello", "Hello from React!");
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -63,7 +74,9 @@ function ChatPage() {
       <h1>Chat</h1>
 
       {messages.map((message) => (
-        <p key={message.id}>{message.content}</p>
+        <p key={message.id}>
+          <strong>{message.sender.username}:</strong> {message.content}
+        </p>
       ))}
 
       <div>

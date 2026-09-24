@@ -7,7 +7,16 @@ const createMessageService = async (content, senderId, conversationId) => {
       senderId: senderId,
       conversationId: conversationId,
     },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
   });
+
   return message;
 };
 
@@ -19,10 +28,18 @@ const getMessagesService = async (conversationId) => {
     orderBy: {
       createdAt: "asc",
     },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
   });
+
   return messages;
 };
-
 module.exports = {
   createMessageService,
   getMessagesService,
