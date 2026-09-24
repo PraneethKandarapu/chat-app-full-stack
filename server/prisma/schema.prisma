@@ -38,3 +38,4 @@ model Message {
   sender       User         @relation(fields: [senderId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
 }
+

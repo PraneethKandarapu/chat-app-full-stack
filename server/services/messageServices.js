@@ -8,10 +8,22 @@ const createMessageService = async (content, senderId, conversationId) => {
       conversationId: conversationId,
     },
   });
-
   return message;
+};
+
+const getMessagesService = async (conversationId) => {
+  const messages = await prisma.message.findMany({
+    where: {
+      conversationId: conversationId,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+  return messages;
 };
 
 module.exports = {
   createMessageService,
+  getMessagesService,
 };
