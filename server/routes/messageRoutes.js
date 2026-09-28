@@ -10,6 +10,7 @@ const {
 const authMiddleware = require("../middleware/authMiddleware.js");
 
 router.post("/messages", authMiddleware, createMessage);
+
 router.get(
   "/conversations/:conversationId/messages",
   authMiddleware,

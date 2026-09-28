@@ -10,8 +10,14 @@ const createMessage = async (req, res) => {
     const message = await createMessageService(
       content,
       req.userId,
-      conversationId,
+      Number(conversationId),
     );
+
+    const io = req.app.get("io");
+
+    const roomName = `conversation:${conversationId}`;
+
+    io.to(roomName).emit("newMessage", message);
 
     res.json(message);
   } catch (err) {
@@ -38,6 +44,7 @@ const getMessage = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   createMessage,
   getMessage,
