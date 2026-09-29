@@ -8,32 +8,24 @@ function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const socketRef = useRef(null);
 
-  /*
-   * Add messages without duplicates.
-   *
-   * We use message.id as the unique identifier.
-   */
   const addMessages = (newMessages) => {
     setMessages((previousMessages) => {
       const messageMap = new Map();
 
-      // Existing messages
       previousMessages.forEach((message) => {
         messageMap.set(message.id, message);
       });
 
-      // New messages
       newMessages.forEach((message) => {
         messageMap.set(message.id, message);
       });
 
-      // Convert Map back to array
       const uniqueMessages = Array.from(messageMap.values());
 
-      // Keep messages in chronological order
       uniqueMessages.sort(
         (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       );
@@ -42,9 +34,30 @@ function ChatPage() {
     });
   };
 
-  /*
-   * Socket.IO connection
-   */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/api/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile");
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Current user:", data);
+        setCurrentUser(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching profile:", error);
+      });
+  }, []);
+
   useEffect(() => {
     const socket = io("http://localhost:5000");
 
@@ -52,7 +65,6 @@ function ChatPage() {
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-
       console.log("Joining conversation:", conversationId);
 
       socket.emit("joinConversation", Number(conversationId));
@@ -60,7 +72,6 @@ function ChatPage() {
 
     socket.on("newMessage", (message) => {
       console.log("========== SOCKET MESSAGE ==========");
-
       console.log("Message ID:", message.id);
       console.log("Content:", message.content);
       console.log("Sender ID:", message.senderId);
@@ -68,7 +79,6 @@ function ChatPage() {
       console.log("Username:", message.sender?.username);
       console.log("Conversation ID:", message.conversationId);
 
-      // Safety check
       if (Number(message.conversationId) !== Number(conversationId)) {
         return;
       }
@@ -85,14 +95,10 @@ function ChatPage() {
     };
   }, [conversationId]);
 
-  /*
-   * Load existing messages from database
-   */
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     console.log("========== OPENING CHAT ==========");
-
     console.log("Conversation ID:", conversationId);
 
     fetch(
@@ -118,18 +124,6 @@ function ChatPage() {
           data.map((message) => message.id),
         );
 
-        /*
-         * IMPORTANT:
-         *
-         * We DON'T simply do:
-         *
-         * setMessages(data)
-         *
-         * because a Socket.IO message could have
-         * arrived while the GET request was running.
-         *
-         * Instead, merge them and remove duplicates.
-         */
         addMessages(data);
       })
       .catch((error) => {
@@ -137,9 +131,6 @@ function ChatPage() {
       });
   }, [conversationId]);
 
-  /*
-   * Send message
-   */
   const sendMessage = () => {
     if (!content.trim()) {
       return;
@@ -171,13 +162,6 @@ function ChatPage() {
       })
       .then((data) => {
         console.log("Message saved:", data);
-
-        /*
-         * DO NOT add data to messages here.
-         *
-         * The server will send the message through
-         * Socket.IO.
-         */
         setContent("");
       })
       .catch((error) => {
@@ -192,13 +176,20 @@ function ChatPage() {
     <div>
       <h1>Chat</h1>
 
-      <div>
-        {messages.map((message) => (
-          <p key={message.id}>
+      {messages.map((message) => {
+        const isMyMessage = currentUser && message.senderId === currentUser.id;
+
+        return (
+          <div
+            key={message.id}
+            style={{
+              textAlign: isMyMessage ? "right" : "left",
+            }}
+          >
             <strong>{message.sender?.username}:</strong> {message.content}
-          </p>
-        ))}
-      </div>
+          </div>
+        );
+      })}
 
       <div>
         <input

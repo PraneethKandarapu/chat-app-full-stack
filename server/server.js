@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
+//creating socketIO server, attaching socket.io to existing HTTP server
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -14,7 +15,6 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// Socket.IO
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -39,7 +39,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Routes
 const messageRoutes = require("./routes/messageRoutes");
 const healthRouter = require("./routes/healthRouter");
 const userRoutes = require("./routes/userRoutes");
