@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import "./ChatPage.css";
 
 function ChatPage() {
   const { conversationId } = useParams();
@@ -11,6 +12,7 @@ function ChatPage() {
   const [currentUser, setCurrentUser] = useState(null);
 
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const addMessages = (newMessages) => {
     setMessages((previousMessages) => {
@@ -37,7 +39,7 @@ function ChatPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/api/profile", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -50,35 +52,23 @@ function ChatPage() {
         return response.json();
       })
       .then((data) => {
-        console.log("Current user:", data);
         setCurrentUser(data);
       })
       .catch((error) => {
-        console.error("Error fetching profile:", error);
+        console.error(error);
       });
   }, []);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const socket = io(import.meta.env.VITE_API_URL);
 
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Joining conversation:", conversationId);
-
       socket.emit("joinConversation", Number(conversationId));
     });
 
     socket.on("newMessage", (message) => {
-      console.log("========== SOCKET MESSAGE ==========");
-      console.log("Message ID:", message.id);
-      console.log("Content:", message.content);
-      console.log("Sender ID:", message.senderId);
-      console.log("Sender:", message.sender);
-      console.log("Username:", message.sender?.username);
-      console.log("Conversation ID:", message.conversationId);
-
       if (Number(message.conversationId) !== Number(conversationId)) {
         return;
       }
@@ -90,7 +80,6 @@ function ChatPage() {
       socket.emit("leaveConversation", Number(conversationId));
 
       socket.disconnect();
-
       socketRef.current = null;
     };
   }, [conversationId]);
@@ -98,11 +87,8 @@ function ChatPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    console.log("========== OPENING CHAT ==========");
-    console.log("Conversation ID:", conversationId);
-
     fetch(
-      `http://localhost:5000/api/conversations/${conversationId}/messages`,
+      `${import.meta.env.VITE_API_URL}/api/conversations/${conversationId}/messages`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -117,19 +103,18 @@ function ChatPage() {
         return response.json();
       })
       .then((data) => {
-        console.log("Messages received from database:", data);
-
-        console.log(
-          "Message IDs:",
-          data.map((message) => message.id),
-        );
-
         addMessages(data);
       })
       .catch((error) => {
-        console.error("Error fetching messages:", error);
+        console.error(error);
       });
   }, [conversationId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   const sendMessage = () => {
     if (!content.trim()) {
@@ -140,14 +125,12 @@ function ChatPage() {
 
     setIsSending(true);
 
-    fetch("http://localhost:5000/api/messages", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/messages`, {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-
       body: JSON.stringify({
         content: content,
         conversationId: Number(conversationId),
@@ -160,43 +143,62 @@ function ChatPage() {
 
         return response.json();
       })
-      .then((data) => {
-        console.log("Message saved:", data);
+      .then(() => {
         setContent("");
       })
       .catch((error) => {
-        console.error("Error sending message:", error);
+        console.error(error);
       })
       .finally(() => {
         setIsSending(false);
       });
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   return (
-    <div>
-      <h1>Chat</h1>
+    <div className="chat-page">
+      <div className="chat-header">
+        <h2>Chat</h2>
+      </div>
 
-      {messages.map((message) => {
-        const isMyMessage = currentUser && message.senderId === currentUser.id;
+      <div className="messages-container">
+        {messages.map((message) => {
+          const isMyMessage =
+            currentUser && message.senderId === currentUser.id;
 
-        return (
-          <div
-            key={message.id}
-            style={{
-              textAlign: isMyMessage ? "right" : "left",
-            }}
-          >
-            <strong>{message.sender?.username}:</strong> {message.content}
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={message.id}
+              className={
+                isMyMessage
+                  ? "message-wrapper my-message"
+                  : "message-wrapper other-message"
+              }
+            >
+              <div className="message-bubble">
+                <div className="message-sender">{message.sender?.username}</div>
 
-      <div>
+                <div className="message-content">{message.content}</div>
+              </div>
+            </div>
+          );
+        })}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="message-input-container">
         <input
           type="text"
           placeholder="Type a message..."
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(event) => setContent(event.target.value)}
+          onKeyDown={handleKeyDown}
         />
 
         <button onClick={sendMessage} disabled={isSending}>

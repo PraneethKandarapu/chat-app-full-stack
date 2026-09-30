@@ -21,6 +21,24 @@ const createMessageService = async (content, senderId, conversationId) => {
   return message;
 };
 
+const verifyConversationAccess = async (conversationId, userId) => {
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [
+        {
+          user1Id: userId,
+        },
+        {
+          user2Id: userId,
+        },
+      ],
+    },
+  });
+
+  return conversation;
+};
+
 const getMessagesService = async (conversationId) => {
   const messages = await prisma.message.findMany({
     where: {
@@ -47,4 +65,5 @@ const getMessagesService = async (conversationId) => {
 module.exports = {
   createMessageService,
   getMessagesService,
+  verifyConversationAccess,
 };

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import "./Auth.css";
+
 function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -7,66 +9,93 @@ function RegisterPage() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const registerUser = () => {
-    setIsLoading(true); //loading started
+  const navigate = useNavigate();
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+
+    setIsLoading(true);
+    setMessage("");
+
     fetch("http://localhost:5000/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: username,
-        email: email,
-        password: password,
+        username,
+        email,
+        password,
       }),
     })
-      .then((response) => {
-        return response.json().then((data) => {
-          if (!response.ok) {
-            throw new Error(data.message);
-          }
-          return data;
-        });
+      .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Registration failed");
+        }
+
+        return data;
       })
       .then((data) => {
-        setMessage(data.message || "Registration successful");
-        setIsLoading(false); //loading ended
+        console.log(data);
+
+        setMessage("Registration successful. Please login.");
+
+        setUsername("");
+        setEmail("");
+        setPassword("");
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
       })
       .catch((error) => {
         setMessage(error.message);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   };
 
   return (
-    <div>
-      <h1>Create Account</h1>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={registerUser} disabled={isLoading}>
-        {isLoading ? "Registering..." : "Register"}
-      </button>
-      <p>{message}</p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1>Create Account</h1>
 
-      <p>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+
+        {message && <p className="auth-message">{message}</p>}
+
+        <p className="auth-link">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </div>
   );
 }

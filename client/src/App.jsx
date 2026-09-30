@@ -4,24 +4,28 @@ import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import UsersPage from "./pages/UsersPage";
 import ChatPage from "./pages/ChatPage";
-// import "../src/App.css";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route path="/login" element={<LoginPage />} />
+
         <Route path="/register" element={<RegisterPage />} />
+
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
-              <ProfilePage></ProfilePage>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/users"
           element={
@@ -30,6 +34,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/chat/:conversationId"
           element={
