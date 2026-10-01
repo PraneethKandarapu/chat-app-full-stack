@@ -17,7 +17,7 @@ function RegisterPage() {
     setIsLoading(true);
     setMessage("");
 
-    fetch("http://localhost:5000/api/auth/register", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

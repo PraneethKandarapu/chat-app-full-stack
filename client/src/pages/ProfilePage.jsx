@@ -6,7 +6,7 @@ function ProfilePage() {
   useEffect(() => {
     //get token from local storage
     const token = localStorage.getItem("token");
-    fetch("http://localhost:5000/api/profile", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

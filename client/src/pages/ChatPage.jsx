@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import "./ChatPage.css";
+import "./chatPage.css";
 
 function ChatPage() {
   const { conversationId } = useParams();
